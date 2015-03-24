@@ -6,3 +6,4 @@
 <a href="editVideo.php">Edit video</a><br/>
 <a href="listVideos.php">List videos</a><br/>
 <a href="channelList.php">List channels</a><br/>
+<a href="upload.php">Uploader widget</a><br/>

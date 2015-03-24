@@ -14,8 +14,8 @@ class BridApi {
   // DON'T CHANGE THIS
   const OAUTH_API_KEY    = 'NTM3MzI5MGMwZDFmYjNj';
   const OAUTH_API_SECRET = 'ff187f0b484dd77e8554796b78c750f00b4bf965';
-  const OAUTH_PROVIDER     = 'http://cms.brid.tv';
-  const API_ENDPOINT       = 'http://cms.brid.tv/api';
+  const OAUTH_PROVIDER     = 'https://cms.brid.tv';
+  const API_ENDPOINT       = 'https://cms.brid.tv/api';
   const AUTHORIZATION_PATH = '/api/authorize';
   const TOKEN_PATH         = '/api/token';
 

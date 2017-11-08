@@ -2,7 +2,7 @@
 require 'client.php';
 /**
  * Brid Api Class
- * @version 1.0
+ * @version 1.1
  */
 class BridApi {
 
@@ -14,8 +14,8 @@ class BridApi {
   // DON'T CHANGE THIS
   const OAUTH_API_KEY    = 'NTM3MzI5MGMwZDFmYjNj';
   const OAUTH_API_SECRET = 'ff187f0b484dd77e8554796b78c750f00b4bf965';
-  const OAUTH_PROVIDER     = 'https://api.brid.tv';
-  const API_ENDPOINT       = 'https://api.brid.tv/api';
+  const OAUTH_PROVIDER     = 'https://cms.brid.tv';
+  const API_ENDPOINT       = 'https://cms.brid.tv/api';
   const AUTHORIZATION_PATH = '/api/authorize';
   const TOKEN_PATH         = '/api/token';
 
@@ -27,8 +27,8 @@ class BridApi {
       throw new Exception('Invalid token.');
     }
     $this->oauth_token    = isset($options['auth_token']) ? $options['auth_token'] : ''; // access_token
-    $this->oauth_provider = self::OAUTH_PROVIDER;
-    $this->api_endpoint   = self::API_ENDPOINT;
+    $this->oauth_provider = isset($options['oauth_provider']) ? $options['oauth_provider'] : self::OAUTH_PROVIDER;
+    $this->api_endpoint   = isset($options['api_endpoint']) ? $options['api_endpoint'] :  self::API_ENDPOINT;
     $this->client         = new OAuth2Client(self::OAUTH_API_KEY, self::OAUTH_API_SECRET, OAuth2Client::AUTH_TYPE_FORM);
     $this->client->setAccessTokenType(OAuth2Client::ACCESS_TOKEN_BEARER);
     $this->client->setAccessToken($this->oauth_token);
@@ -160,26 +160,43 @@ class BridApi {
     );
   }
   /**
-   * Delete videos
-   * @param (array) $_post - Post array $_POST = array('partner_id'=>1, 'ids'=>'1,2,3')
+   * Dataset players - All player data info
+   * @param (int) $id Site id
    * @param (bool) $encode - False to encode it in json, true to return it in StdClass
-   **/
-  protected function deleteVideos($_p=array(),  $encode=false){
-  	if(!empty($_p)){
-  		if(isset($_p['partner_id'])) $_p['partner_id'] = intval($_p['partner_id']);
-  	}
-  	if(!isset($_p['partner_id']) || $_p['partner_id']==0){
-  		throw new InvalidArgumentException('Partner id (partner_id) is required post param.');
-  	}
-  	if(isset($_p) && !isset($_p['ids'])){ //CSV
-  		throw new InvalidArgumentException('Ids (ids) is required post param.');
-  	}
-  	$post = array();
-  	foreach($_p as $k=>$v){
-  		$post['data[Video]['.$k.']'] = $v;
+   */
+  protected function players($id=null, $encode=false){
+  
+  	$id = intval($id);
+  	if($id==null || $id==0 || !is_numeric($id)){
+  		throw new InvalidArgumentException('Partner id is required.');
   	}
   
-  	return $this->call(array('url'=>'deleteVideos', 'params'=>$post), $encode);
+  	$players = $this->call(array('url'=>'players/'.$id), $encode);
+  
+  	return $players;
+  }
+  /**
+   * List players id => name
+   * @param (int) $id Site id
+   * @param (bool) $encode - False to encode it in json, true to return it in StdClass
+   */
+  protected function playersList($id=null, $encode=false){
+  
+  	$id = intval($id);
+  	if($id==null || $id==0 || !is_numeric($id)){
+  		throw new InvalidArgumentException('Partner id is required.');
+  	}
+  
+  	$players = $this->call(array('url'=>'playersList/'.$id), $encode);
+  
+  	return $players;
+  }
+  /**
+   * Get api instance for pretty calls $api->get()->video($id)
+   */
+  public function get(){
+  
+  	return $this;
   }
   /**
   * Delete Ad
@@ -243,6 +260,27 @@ class BridApi {
     return $this->call(array('url'=>'addVideo', 'params'=>$post), $encode);
   }
   /**
+   * fetchVideoViaUrl Video
+   * @param (array) $_post - Post fetch array with url
+   * @param (bool) $encode - False to encode it in json, true to return it in StdClass
+   */
+  protected function fetchVideoViaUrl($_post=array(), $encode=false){
+  	if(!isset($_post) || empty($_post)){
+  		throw new InvalidArgumentException('Post is empty.');
+  	}
+  	if(!isset($_post['partner_id']) || empty($_post['partner_id'])){
+  		throw new InvalidArgumentException('Partner id is required.');
+  	}
+  	if(!isset($_post['videoUrl']) || empty($_post['videoUrl'])){
+  		throw new InvalidArgumentException('videoUrl is required.');
+  	}
+  	$post = array();
+  	foreach($_post as $k=>$v){
+  		$post['data[Video]['.$k.']'] = $v;
+  	}
+  	return $this->call(array('url'=>'fetchVideoViaUrl', 'params'=>$post), $encode);
+  }
+  /**
   * Edit Video
   * @param (array) $_post - Post array video
   * @param (bool) $encode - False to encode it in json, true to return it in StdClass
@@ -269,6 +307,89 @@ class BridApi {
     return $this->call(array('url'=>'editVideo', 'params'=>$post), $encode);
   }
   /**
+   * Add Playlist
+   * @param (array) $_post - Post array playlist with videos
+   * @param (bool) $encode - False to encode it in json, true to return it in StdClass
+   */
+  protected function addPlaylist($_post=array(), $encode=false){
+  
+  	if(!isset($_post) || empty($_post)){
+  		throw new InvalidArgumentException('Post is empty.');
+  	}
+  	if(!isset($_post['name'])){ //Name
+  		throw new InvalidArgumentException('Playlist name is required.');
+  	}
+  	if(!isset($_post['partner_id'])){ //Name
+  		throw new InvalidArgumentException('Playlist partner_id is required.');
+  	}
+  	if(!isset($_post['ids'])){ //Video ids
+  		throw new InvalidArgumentException('Videos Ids (ids) is required post param.');
+  	}
+  	$post = array();
+  	foreach($_post as $k=>$v){
+  		if($k!='ids'){
+  			$post['data[Playlist]['.$k.']'] = $v;
+  		}else{
+  			$post['data[Video]['.$k.']'] = $v;
+  		}
+  	}
+  	 
+  
+  	return $this->call(array('url'=>'addPlaylist', 'params'=>$post), $encode);
+  
+  }
+  protected function addVideoPlaylist($_post=array(), $encode=false){
+  	if(!isset($_post) || empty($_post)){
+  		throw new InvalidArgumentException('Post is empty.');
+  	}
+  	if(!isset($_post['id'])){ //CSV
+  		throw new InvalidArgumentException('Playlist id (id) is required post param.');
+  	}
+  	if(!isset($_post['ids'])){ //CSV
+  		throw new InvalidArgumentException('Videos Ids (ids) is required post param.');
+  	}
+  
+  	$post = array();
+  	foreach($_post as $k=>$v){
+  		if($k!='ids'){
+  			$post['data[Playlist]['.$k.']'] = $v;
+  		}else{
+  			$post['data[Video]['.$k.']'] = $v;
+  		}
+  	}
+  
+  	return $this->call(array('url'=>'addVideoPlaylist', 'params'=>$post), $encode);
+  }
+  
+  /**
+   * Edit Playlist
+   * @param (int) $id - Playlist id
+   * @param (array) $_post - Post array playlist data
+   * @param (bool) $encode - False to encode it in json, true to return it in StdClass
+   */
+  protected function editPlaylist($_post=array(),  $encode=false){
+  
+  	if(!isset($_post) || empty($_post)){
+  		throw new InvalidArgumentException('Post is empty.');
+  	}
+  	if(!isset($_post['id'])){ //Name
+  		throw new InvalidArgumentException('Playlist id is required.');
+  	}
+  	if(!isset($_post['partner_id'])){ //Name
+  		throw new InvalidArgumentException('Playlist partner_id is required.');
+  	}
+  	 
+  	$post = array();
+  	foreach($_post as $k=>$v){
+  		if($k!='ids'){
+  			$post['data[Playlist]['.$k.']'] = $v;
+  		}else{
+  			$post['data[Video]['.$k.']'] = $v;
+  		}
+  	}
+  	return $this->call(array('url'=>'editPlaylist', 'params'=>$post), $encode);
+  }
+  /**
    * Get channel list
    * @param (bool) $encode - False to encode it in json, true to return it in StdClass
    */
@@ -292,6 +413,51 @@ class BridApi {
     $video->Video->publish = implode('-',array_reverse(explode('-', $video->Video->publish)));
           
     return $video;
+  }
+  /**
+   * Get playlist
+   * @param (int) $id - Playlist id
+   * @param (bool) $encode - False to encode it in json, true to return it in StdClass
+   */
+  protected function playlist($id=null,  $encode=false){
+  	$id = intval($id);
+  	if($id==null || $id==0 || !is_numeric($id)){
+  		throw new InvalidArgumentException('Playlist id is invalid.');
+  	}
+  	$playlist = $this->call(array('url'=>'playlist/'.$id), $encode);
+  	//Fix date format
+  	if(isset($playlist->Playlist))
+  		$playlist->Playlist->publish = implode('-',array_reverse(explode('-', $playlist->Playlist->publish)));
+  
+  		return $playlist;
+  }
+  /**
+   * Delete video from playlist
+   * @param (array) $_post - Post array $_POST = array('partner_id'=>1, 'id'=>1, 'video_id'=>2)
+   * @param (bool) $encode - False to encode it in json, true to return it in StdClass
+   */
+  protected function removeVideoPlaylist($_post, $encode=false){
+  	if(!empty($_post)){
+  		if(isset($_post['partner_id'])) $_post['partner_id'] = intval($_post['partner_id']);
+  		if(isset($_post['video_id'])) $_post['video_id'] = intval($_post['video_id']);
+  		if(isset($_post['id'])) $_post['id'] = intval($_post['id']);
+  	}
+  	if(!isset($_post['partner_id']) || $_post['partner_id']==0){
+  		throw new InvalidArgumentException('Partner id (partner_id) is required post param.');
+  	}
+  	if(!isset($_post['id']) || $_post['partner_id']==0){ //CSV
+  		throw new InvalidArgumentException('Id (id) is required post param.');
+  	}
+  	if(!isset($_post['video_id']) || $_post['video_id']==0){ //CSV
+  		throw new InvalidArgumentException('Video id (video_id) is required post param.');
+  	}
+  
+  	$post = array();
+  
+  	foreach($_post as $k=>$v){
+  		$post['data[Playlist]['.$k.']'] = $v;
+  	}
+  	return $this->call(array('url'=>'removeVideoPlaylist', 'params'=>$post), $encode);
   }
   /**
   * Add partner
@@ -394,6 +560,53 @@ class BridApi {
       }
 
     return $videoSet;
+  }
+  /**
+   * Get user
+   * @param (bool) $encode - False to encode it in json, true to return it in StdClass
+   */
+  protected function userinfo($encode=false){
+  	return $this->call(array('url'=>'userinfo'), $encode);
+  }
+  /**
+   * Get playlists - LIST
+   * @param (int) $id - Site id
+   * @param (bool) $encode - False to encode it in json, true to return it in StdClass
+   */
+  protected function playlists($id,  $encode=false){
+  	$id = intval($id);
+  	if($id==null || $id==0 || !is_numeric($id)){
+  		throw new InvalidArgumentException('Partner id is invalid (playlists).');
+  	}
+  	//Append for pagiantion/ordering
+  	$append = ''; $search=''; $options = array('url'=>'playlists/'.$id);
+  
+  	if(isset($_POST['apiQueryParams'])){
+  		$options['url'] .= '/'.$_POST['apiQueryParams'];
+  	}
+  
+  	//Save and invalidate search string
+  	if(isset($_POST['search'])){ $_SESSION['Brid.Playlist.Search'] = $_POST['search'];}
+  
+  	if(isset($_SESSION['Brid.Playlist.Search']) && $_SESSION['Brid.Playlist.Search']!=''){
+  
+  		$_POST['Playlist']['search'] = $search = $_SESSION['Brid.Playlist.Search'];
+  		$options['params'] = $_POST;
+  	}
+  	if(isset($_POST['limit'])){
+  		$options['params']['limit'] = $_POST['limit'];
+  	}
+  
+  	$playlistSet = $this->call($options, $encode);
+  
+  	//Change date to d/m/Y format
+  	if(!empty($playlistSet->Playlists)){
+  		foreach($playlistSet->Playlists as $k=>$v){
+  			$v->Playlist->publish = implode('-',array_reverse(explode('-', $v->Playlist->publish)));
+  		}
+  	}
+  
+  	return $playlistSet;
   }
   /**
    * Get sites list

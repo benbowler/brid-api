@@ -14,8 +14,8 @@ class BridApi {
   // DON'T CHANGE THIS
   const OAUTH_API_KEY    = 'NTM3MzI5MGMwZDFmYjNj';
   const OAUTH_API_SECRET = 'ff187f0b484dd77e8554796b78c750f00b4bf965';
-  const OAUTH_PROVIDER     = 'https://cms.brid.tv';
-  const API_ENDPOINT       = 'https://cms.brid.tv/api';
+  const OAUTH_PROVIDER     = 'https://api.brid.tv';
+  const API_ENDPOINT       = 'https://api.brid.tv/api';
   const AUTHORIZATION_PATH = '/api/authorize';
   const TOKEN_PATH         = '/api/token';
 
@@ -458,6 +458,19 @@ class BridApi {
   		$post['data[Playlist]['.$k.']'] = $v;
   	}
   	return $this->call(array('url'=>'removeVideoPlaylist', 'params'=>$post), $encode);
+  }
+  /**
+   * Get partner info
+   * @param (int) $id - Site id
+   * @param (bool) $encode - False to encode it in json, true to return it in StdClass
+   */
+  protected function partner($id = null,  $encode = false){
+  	$id = intval($id);
+  	if($id==null || $id==0 || !is_numeric($id)){
+  		throw new InvalidArgumentException('Partner id is invalid.');
+  	}
+  
+  	return $this->call(array('url'=>'partner/'.$id), $encode);
   }
   /**
   * Add partner

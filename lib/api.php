@@ -199,6 +199,28 @@ class BridApi {
   	return $this;
   }
   /**
+   * Delete videos
+   * @param (array) $_post - Post array $_POST = array('partner_id'=>1, 'ids'=>'1,2,3')
+   * @param (bool) $encode - False to encode it in json, true to return it in StdClass
+   **/
+  protected function deleteVideos($_p=array(),  $encode=false){
+  	if(!empty($_p)){
+  		if(isset($_p['partner_id'])) $_p['partner_id'] = intval($_p['partner_id']);
+  	}
+  	if(!isset($_p['partner_id']) || $_p['partner_id']==0){
+  		throw new InvalidArgumentException('Partner id (partner_id) is required post param.');
+  	}
+  	if(isset($_p) && !isset($_p['ids'])){ //CSV
+  		throw new InvalidArgumentException('Ids (ids) is required post param.');
+  	}
+  	$post = array();
+  	foreach($_p as $k=>$v){
+  		$post['data[Video]['.$k.']'] = $v;
+  	}
+  
+  	return $this->call(array('url'=>'deleteVideos', 'params'=>$post), $encode);
+  }
+  /**
   * Delete Ad
   * @param (array) $_post - Post array $_POST = array('id'=>AD_ID)
   * @param (bool) $encode - False to encode it in json, true to return it in StdClass

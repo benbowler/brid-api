@@ -441,12 +441,12 @@ class BridApi {
    * @param (int) $id - Playlist id
    * @param (bool) $encode - False to encode it in json, true to return it in StdClass
    */
-  protected function playlist($id=null,  $encode=false){
+  protected function playlist($id=null, $page=0, $items=20, $encode=false){
   	$id = intval($id);
   	if($id==null || $id==0 || !is_numeric($id)){
   		throw new InvalidArgumentException('Playlist id is invalid.');
   	}
-  	$playlist = $this->call(array('url'=>'playlist/'.$id), $encode);
+  	$playlist = $this->call(array('url'=>'playlist/'.$id.'/'.$page.'/'.$items), $encode);
   	//Fix date format
   	if(isset($playlist->Playlist))
   		$playlist->Playlist->publish = implode('-',array_reverse(explode('-', $playlist->Playlist->publish)));
@@ -608,7 +608,7 @@ class BridApi {
    * @param (int) $id - Site id
    * @param (bool) $encode - False to encode it in json, true to return it in StdClass
    */
-  protected function playlists($id,  $encode=false){
+  protected function playlists($id,$encode=false){
   	$id = intval($id);
   	if($id==null || $id==0 || !is_numeric($id)){
   		throw new InvalidArgumentException('Partner id is invalid (playlists).');

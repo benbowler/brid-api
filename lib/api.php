@@ -682,6 +682,41 @@ class BridApi {
     return $this->call(array('url'=>'checkUrl', 'params'=>$post), $encode);
     
   }
+  
+  /**
+   * Sort videos in playlist
+   * @param (array) $_post - Post array playlist
+   * @param (bool) $encode - False to encode it in json, true to return it in StdClass
+   */
+  protected function sortVideos($postData=array(),  $encode=false){
+      
+      $_post = array_change_key_case($postData);
+      
+      if(!isset($_post) || empty($_post))
+      {
+          throw new InvalidArgumentException('Post is empty.');
+      }
+      if(!isset($_post['sort']) || empty($_post['sort'])){
+          throw new InvalidArgumentException('Video ids are required.');
+      }
+      if(!isset($_post['partner_id']) || empty($_post['partner_id'])){
+          throw new InvalidArgumentException('Partner id is required.');
+      }
+      if(!isset($_post['id']) && empty($_post['id']))
+      {
+          throw new InvalidArgumentException('Playlist id is required.');
+      }
+      
+      
+      $post = array();
+      
+      foreach($_post as $k=>$v)
+      {
+          $post['data[Playlist]['.$k.']'] = $v;
+      }
+      
+      return $this->call(array('url'=>'sortVideos', 'params'=>$post), $encode);
+  }
 
 }
 

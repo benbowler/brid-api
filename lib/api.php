@@ -651,6 +651,40 @@ class BridApi {
     return $this->call(array('url'=>'sitesList'), $encode);
   }
   /**
+  * Get sites usages
+  * @param (bool) $encode - False to encode it in json, true to return it in StdClass
+  */
+  protected function getSiteUsage($postData=array(), $encode=false){
+      
+      $_post = array_change_key_case($postData);
+      
+      if(!isset($_post) || empty($_post))
+      {
+          throw new InvalidArgumentException('Post is empty.');
+      }
+      if(!isset($_post['partner_id'])){
+          throw new InvalidArgumentException('Partner id is required.');
+      }
+      if(!isset($_post['from']) && empty($_post['from']))
+      {
+          throw new InvalidArgumentException('From date is required.');
+      }
+      if(!isset($_post['to']) && empty($_post['to']))
+      {
+          throw new InvalidArgumentException('To date is required.');
+      }
+      
+      
+      $post = array();
+      
+      foreach($_post as $k=>$v)
+      {
+          $post['data['.$k.']'] = $v;
+      }
+      
+      return $this->call(array('url'=>'getSiteUsage', 'params'=>$post), $encode);
+  }
+  /**
    *  Display exception in json style so frontend can display it
    *
    * @param (Exception) $i - Exception object

@@ -1,0 +1,12 @@
+{
+  "name": "benbowler/brid-api",
+  "description": "Brid TV PHP Library",
+  "type": "library",
+  "authors": [
+    {
+      "name": "Uros Jojic"
+    }
+  ],
+  "minimum-stability": "dev",
+  "require": {}
+}
